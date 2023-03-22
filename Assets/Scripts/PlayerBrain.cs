@@ -13,15 +13,16 @@ public class PlayerBrain
         _inputSources = inputSources;
     }
 
-    public void OnFixedUpdate()
+    public void OnUpdate()
     {
-        _playerEntity.Move(GetDirection());
         if (IsJump)
         {
             _playerEntity.Jump();
             IsJump = false;
         }
     }
+
+    public void OnFixedUpdate() => _playerEntity.Move(GetDirection());
 
     private float GetDirection()
     {

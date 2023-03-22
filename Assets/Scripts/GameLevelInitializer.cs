@@ -8,6 +8,7 @@ public class GameLevelInitializer : MonoBehaviour
 
     [Header("Player")]
     [SerializeField] private PlayerEntity _playerEntity;
+    [SerializeField] private Transform _cubeHolder;
 
     [Header("Level")]
     [SerializeField] private GameObject[] _platformPrefabs;
@@ -21,6 +22,17 @@ public class GameLevelInitializer : MonoBehaviour
     private Queue<GameObject> _platformsPool;
     private System.Random _random;
     private bool _onPause;
+    private int _prevCounter = 1;
+
+    private void OnNewCube()
+    {
+        if (_prevCounter != _cubeHolder.childCount)
+        {
+            if(_prevCounter < _cubeHolder.childCount)
+                _playerBrain.IsJump = true;
+            _prevCounter = _cubeHolder.childCount;
+        }
+    }
 
     private void Awake()
     {
@@ -43,6 +55,8 @@ public class GameLevelInitializer : MonoBehaviour
         if (_playerEntity.PositionZ > 
             _spawnPoint.position.z - _platformLength * (_poolSize / 2))
             CreatePlatform();
+        OnNewCube();
+        _playerBrain.OnUpdate();
     }
 
     private void FixedUpdate()
@@ -63,6 +77,7 @@ public class GameLevelInitializer : MonoBehaviour
     private void CreatePlatform()
     {
         int platformIndex = _random.Next(0, _platformPrefabs.Length);
+        //int platformIndex = 2;
         GameObject newObj = Instantiate(_platformPrefabs[platformIndex],
              _spawnPoint.position, Quaternion.identity, _platformsContainer);
         _platformsPool.Enqueue(newObj);
