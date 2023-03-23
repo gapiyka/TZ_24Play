@@ -26,6 +26,8 @@ public class GameLevelInitializer : MonoBehaviour
     private System.Random _random;
     private int _prevCounter = 1;
     private bool _onPause => _state != StateType.PlayMode;
+    private bool _needNewPlatform => _playerEntity.PositionZ >
+            _spawnPoint.position.z - _platformLength * (_poolSize / 2);
     private void OnNewCube()
     {
         if (_prevCounter != _cubeHolder.childCount)
@@ -64,15 +66,10 @@ public class GameLevelInitializer : MonoBehaviour
             CheckMoving();
         if (_onPause)
             return;
-        if (_playerEntity.PositionZ > 
-            _spawnPoint.position.z - _platformLength * (_poolSize / 2))
+        if (_needNewPlatform)
             CreatePlatform();
         OnNewCube();
-        if (!_playerBrain.OnUpdate())
-        {
-            ChangeState(StateType.LoseMode);
-            _playerEntity.SwitchRagdollModel();
-        }
+        LoseCheck();
     }
 
     private void FixedUpdate()
@@ -118,5 +115,15 @@ public class GameLevelInitializer : MonoBehaviour
     {
         _state = state;
         _uiManager.OnUpdateState(state);
+    }
+
+    private void LoseCheck()
+    {
+        if(!_playerBrain.OnUpdate())
+        {
+            ChangeState(StateType.LoseMode);
+            _playerEntity.SwitchRagdollModel();
+            Handheld.Vibrate();
+        }
     }
 }

@@ -8,9 +8,10 @@ public class MobileInputHandler : IEntityInputSource
 
     private float GetDirection()
     {
-        if (Input.touchCount > 0)
+        int touches = Input.touchCount;
+        if (touches > 0)
         {
-            Vector3 touchPosition = Input.GetTouch(0).position;
+            Vector3 touchPosition = Input.GetTouch(Input.touchCount-1).position;
             if (touchPosition.x > Screen.width * 0.5f)
                 _direction = 1;
             else
