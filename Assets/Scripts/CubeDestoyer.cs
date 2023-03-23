@@ -3,8 +3,7 @@ using UnityEngine;
 
 public class CubeDestoyer : MonoBehaviour
 {
-    private const string _wallTag = "Obstacle";
-    private const float _minDif = 1f;
+    private const float _minDif = 3f;
     private const float _delay = 1f;
     private bool _isExecuting;
     private float _collisionPosZ;
@@ -12,7 +11,7 @@ public class CubeDestoyer : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.tag == _wallTag && !_isExecuting)
+        if (collision.gameObject.tag == TagConsts.Wall && !_isExecuting)
             StartCoroutine(DestroyCube());
     }
 
@@ -24,10 +23,13 @@ public class CubeDestoyer : MonoBehaviour
         if (IsSamePos)
             Destroy(transform.gameObject);
         else
+        {
+            yield return new WaitForSeconds(_delay);
             transform.position = new Vector3(
-                transform.position.x, 
-                transform.position.y, 
+                transform.position.x,
+                transform.position.y,
                 transform.parent.position.z);
+        }
         _isExecuting = false;
     }
 }

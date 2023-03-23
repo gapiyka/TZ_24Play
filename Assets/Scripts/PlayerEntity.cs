@@ -8,6 +8,7 @@ public class PlayerEntity : MonoBehaviour
     [SerializeField] private Animator _animator;
     [SerializeField] private float _animationDelay;
     [SerializeField] private Transform _playerBody;
+    [SerializeField] private BodyCollisionChecker _playerBodyCollision;
 
     private const float leftBorder = -2f;
     private const float rightBorder = 2f;
@@ -17,6 +18,7 @@ public class PlayerEntity : MonoBehaviour
     private bool _isJumping = false;
 
     public float PositionZ => transform.position.z;
+    public bool CheckCollapse => _playerBodyCollision.IsTouchedWall;
 
     public void Move(float x)
     {

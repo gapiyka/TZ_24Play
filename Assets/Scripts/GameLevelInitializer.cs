@@ -9,28 +9,38 @@ public class GameLevelInitializer : MonoBehaviour
     [Header("Player")]
     [SerializeField] private PlayerEntity _playerEntity;
     [SerializeField] private Transform _cubeHolder;
-
     [Header("Level")]
     [SerializeField] private GameObject[] _platformPrefabs;
     [SerializeField] private Transform _platformsContainer;
     [SerializeField] private Transform _spawnPoint;
     [SerializeField] private float _platformLength;
+    [Header("UI")]
+    [SerializeField] private UIManager _uiManager;
 
     private ExternalDeviceInputHandler _externalDeviceInputHandler;
     private MobileInputHandler _mobileInputHandler;
+    private List<IEntityInputSource> _handlers;
     private PlayerBrain _playerBrain;
     private Queue<GameObject> _platformsPool;
+    private StateType _state;
     private System.Random _random;
-    private bool _onPause;
     private int _prevCounter = 1;
-
+    private bool _onPause => _state != StateType.PlayMode;
     private void OnNewCube()
     {
         if (_prevCounter != _cubeHolder.childCount)
         {
-            if(_prevCounter < _cubeHolder.childCount)
+            if (_prevCounter < _cubeHolder.childCount)
                 _playerBrain.IsJump = true;
             _prevCounter = _cubeHolder.childCount;
+            for(int i = 0; i < _cubeHolder.childCount; i++)//align
+            {
+                Transform cube = _cubeHolder.GetChild(i);
+                cube.position = new Vector3(
+                cube.position.x,
+                cube.position.y,
+                _cubeHolder.position.z);
+            }
         }
     }
 
@@ -38,11 +48,11 @@ public class GameLevelInitializer : MonoBehaviour
     {
         _externalDeviceInputHandler = new ExternalDeviceInputHandler();
         _mobileInputHandler = new MobileInputHandler();
-        _playerBrain = new PlayerBrain(_playerEntity, 
-            new List<IEntityInputSource> {
-            _externalDeviceInputHandler, 
-            _mobileInputHandler 
-        });
+        _handlers = new List<IEntityInputSource> {
+            _externalDeviceInputHandler,
+            _mobileInputHandler
+        };
+        _playerBrain = new PlayerBrain(_playerEntity, _handlers);
         _platformsPool = new Queue<GameObject>();
         _random = new System.Random(DateTime.Now.Millisecond);
         PlatformsInit();
@@ -50,13 +60,16 @@ public class GameLevelInitializer : MonoBehaviour
 
     private void Update()
     {
+        if (_state == StateType.PauseMode)
+            CheckMoving();
         if (_onPause)
             return;
         if (_playerEntity.PositionZ > 
             _spawnPoint.position.z - _platformLength * (_poolSize / 2))
             CreatePlatform();
         OnNewCube();
-        _playerBrain.OnUpdate();
+        if (!_playerBrain.OnUpdate())
+            ChangeState(StateType.LoseMode);
     }
 
     private void FixedUpdate()
@@ -77,7 +90,6 @@ public class GameLevelInitializer : MonoBehaviour
     private void CreatePlatform()
     {
         int platformIndex = _random.Next(0, _platformPrefabs.Length);
-        //int platformIndex = 2;
         GameObject newObj = Instantiate(_platformPrefabs[platformIndex],
              _spawnPoint.position, Quaternion.identity, _platformsContainer);
         _platformsPool.Enqueue(newObj);
@@ -87,4 +99,21 @@ public class GameLevelInitializer : MonoBehaviour
     }
 
     private void DeletePlatform() => Destroy(_platformsPool.Dequeue());
+
+    private void CheckMoving()
+    {
+        foreach (var handler in _handlers)
+            if (handler.HorizontalDirection != 0f)
+            {
+                _state = StateType.PlayMode;
+                ChangeState(_state);
+                break;
+            }
+    }
+
+    private void ChangeState(StateType state)
+    {
+        _state = state;
+        _uiManager.OnUpdateState(state);
+    }
 }

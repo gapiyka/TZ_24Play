@@ -1,15 +1,13 @@
-
 using UnityEngine;
 
 public class CubeHolder : MonoBehaviour
 {
-    private const string _pickTag = "Pickable";
     [SerializeField] private GameObject _prefab;
     private Vector3 _offset = new Vector3(0f, 1f, 0f);
 
     private void OnTriggerEnter(Collider collider)
     {
-        if (collider.gameObject.tag == _pickTag)
+        if (collider.gameObject.tag == TagConsts.Pick)
             Pick(collider.transform.parent);
     }
 
