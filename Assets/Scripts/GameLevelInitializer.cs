@@ -69,7 +69,10 @@ public class GameLevelInitializer : MonoBehaviour
             CreatePlatform();
         OnNewCube();
         if (!_playerBrain.OnUpdate())
+        {
             ChangeState(StateType.LoseMode);
+            _playerEntity.SwitchRagdollModel();
+        }
     }
 
     private void FixedUpdate()

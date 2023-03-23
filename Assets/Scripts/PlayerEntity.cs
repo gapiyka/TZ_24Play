@@ -51,5 +51,11 @@ public class PlayerEntity : MonoBehaviour
         yield return new WaitForSeconds(_animationDelay);
         SwitchJump(false);
     }
+
+    public void SwitchRagdollModel()
+    {
+        _playerBody.GetChild(0).gameObject.SetActive(false);
+        _playerBody.GetChild(1).gameObject.SetActive(true);
+    }
 }
 
